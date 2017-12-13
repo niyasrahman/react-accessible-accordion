@@ -2,117 +2,141 @@
 
 import React, { Component } from 'react';
 import type { Node } from 'react';
-import { isArraysEqualShallow } from '../utils';
+import { Provider, connect } from 'unistore';
+// import { isArraysEqualShallow } from '../utils';
+import store from '../store';
+import actions from '../actions';
 
 type AccordionProps = {
     accordion: boolean,
     children: Node,
-    activeItems: Array<string | number>,
     className: string,
     onChange: Function,
+    setAccordion: Function,
+    setOnChange: Function,
 };
 
-type AccordionState = {
-    activeItems: Array<string | number>,
-};
-
-class Accordion extends Component<AccordionProps, AccordionState> {
+class Accordion extends Component<AccordionProps, *> {
     static defaultProps = {
         accordion: true,
         onChange: () => {},
         className: 'accordion',
-        activeItems: [],
     };
 
-    state = {
-        activeItems: this.preExpandedItems(),
-        accordion: true,
-    };
-
-    componentWillReceiveProps(nextProps: AccordionProps) {
-        if (!isArraysEqualShallow(nextProps.activeItems, this.state.activeItems)) {
-            let newActiveItems;
-            if (nextProps.accordion) {
-                newActiveItems = nextProps.activeItems.length
-                    ? [nextProps.activeItems[0]]
-                    : [];
-            } else {
-                newActiveItems = nextProps.activeItems.slice();
-            }
-            this.setState({
-                activeItems: newActiveItems,
-            });
-
-            nextProps.onChange(nextProps.accordion ? newActiveItems[0] : newActiveItems);
-        }
+    constructor(props: AccordionProps) {
+        super(props);
+        props.setAccordion(props.accordion);
+        props.setOnChange(props.onChange);
     }
 
-    preExpandedItems() {
-        let activeItems = [];
-        React.Children.map(this.props.children, (item, index) => {
-            if (item.props.expanded) {
-                if (this.props.accordion) {
-                    if (activeItems.length === 0) activeItems.push(item.props.customKey || index);
-                } else {
-                    activeItems.push(item.props.customKey || index);
-                }
-            }
-        });
-        if (activeItems.length === 0 && this.props.activeItems.length !== 0) {
-            activeItems = this.props.accordion ? [this.props.activeItems[0]] : this.props.activeItems.slice();
-        }
-        return activeItems;
-    }
+    // state = {
+    //     activeItems: this.preExpandedItems(),
+    //     accordion: true,
+    // };
 
-    handleClick(key: number | string) {
-        let activeItems = this.state.activeItems;
-        if (this.props.accordion) {
-            activeItems = activeItems[0] === key ? [] : [key];
-        } else {
-            activeItems = [...activeItems];
-            const index = activeItems.indexOf(key);
-            const isActive = index > -1;
-            if (isActive) {
-                // remove active state
-                activeItems.splice(index, 1);
-            } else {
-                activeItems.push(key);
-            }
-        }
-        this.setState({
-            activeItems,
-        });
+    // componentWillReceiveProps(nextProps: AccordionProps) {
+    //     if (
+    //         !isArraysEqualShallow(nextProps.activeItems, this.state.activeItems)
+    //     ) {
+    //         let newActiveItems;
+    //         if (nextProps.accordion) {
+    //             newActiveItems = nextProps.activeItems.length
+    //                 ? [nextProps.activeItems[0]]
+    //                 : [];
+    //         } else {
+    //             newActiveItems = nextProps.activeItems.slice();
+    //         }
+    //         this.setState({
+    //             activeItems: newActiveItems,
+    //         });
 
-        this.props.onChange(this.props.accordion ? activeItems[0] : activeItems);
-    }
+    //         nextProps.onChange(
+    //             nextProps.accordion ? newActiveItems[0] : newActiveItems,
+    //         );
+    //     }
+    // }
 
-    renderItems() {
-        const { accordion, children } = this.props;
+    // preExpandedItems() {
+    //     let activeItems = [];
+    //     React.Children.map(this.props.children, (item, index) => {
+    //         if (item.props.expanded) {
+    //             if (this.props.accordion) {
+    //                 if (activeItems.length === 0)
+    //                     activeItems.push(item.props.customKey || index);
+    //             } else {
+    //                 activeItems.push(item.props.customKey || index);
+    //             }
+    //         }
+    //     });
+    //     if (activeItems.length === 0 && this.props.activeItems.length !== 0) {
+    //         activeItems = this.props.accordion
+    //             ? [this.props.activeItems[0]]
+    //             : this.props.activeItems.slice();
+    //     }
+    //     return activeItems;
+    // }
 
-        return React.Children.map(children, (item, index) => {
-            const key = item.props.customKey || index;
-            const expanded = (this.state.activeItems.indexOf(key) !== -1) && (!item.props.disabled);
+    // handleClick(key: number | string) {
+    //     let activeItems = this.state.activeItems;
+    //     if (this.props.accordion) {
+    //         activeItems = activeItems[0] === key ? [] : [key];
+    //     } else {
+    //         activeItems = [...activeItems];
+    //         const index = activeItems.indexOf(key);
+    //         const isActive = index > -1;
+    //         if (isActive) {
+    //             // remove active state
+    //             activeItems.splice(index, 1);
+    //         } else {
+    //             activeItems.push(key);
+    //         }
+    //     }
+    //     this.setState({
+    //         activeItems,
+    //     });
 
-            return React.cloneElement(item, {
-                disabled: item.props.disabled,
-                accordion,
-                expanded,
-                key: `accordion__item-${key}`,
-                onClick: this.handleClick.bind(this, key),
-            });
-        });
-    }
+    //     this.props.onChange(
+    //         this.props.accordion ? activeItems[0] : activeItems,
+    //     );
+    // }
 
-    renderItems = this.renderItems.bind(this);
+    // renderItems() {
+    //     const { accordion, children } = this.props;
+
+    //     return React.Children.map(children, (item, index) => {
+    //         const key = item.props.customKey || index;
+    //         const expanded =
+    //             this.state.activeItems.indexOf(key) !== -1 &&
+    //             !item.props.disabled;
+
+    //         return React.cloneElement(item, {
+    //             disabled: item.props.disabled,
+    //             accordion,
+    //             expanded,
+    //             key: `accordion__item-${key}`,
+    //             onClick: this.handleClick.bind(this, key),
+    //         });
+    //     });
+    // }
+
+    // renderItems = this.renderItems.bind(this);
 
     render() {
-        const { className, accordion } = this.props;
+        const { className, accordion, children } = this.props;
         return (
             <div role={accordion ? 'tablist' : null} className={className}>
-                {this.renderItems()}
+                {children}
             </div>
         );
     }
 }
 
-export default Accordion;
+const AccordionContainer = connect('accordion', actions)(Accordion);
+
+const AccordionWrapper = (props: AccordionProps) => (
+    <Provider store={store}>
+        <AccordionContainer {...props} />
+    </Provider>
+);
+
+export default AccordionWrapper;
