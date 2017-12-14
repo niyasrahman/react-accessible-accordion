@@ -12,8 +12,7 @@ type AccordionProps = {
     children: Node,
     className: string,
     onChange: Function,
-    setAccordion: Function,
-    setOnChange: Function,
+    activeItems: Array<string | number>,
 };
 
 class Accordion extends Component<AccordionProps, *> {
@@ -21,6 +20,7 @@ class Accordion extends Component<AccordionProps, *> {
         accordion: true,
         onChange: () => {},
         className: 'accordion',
+        activeItems: [],
     };
 
     constructor(props: AccordionProps) {
@@ -28,6 +28,12 @@ class Accordion extends Component<AccordionProps, *> {
         props.setAccordion(props.accordion);
         props.setOnChange(props.onChange);
     }
+
+    store = createStore({
+        accordion: this.props.accordion,
+        onChange: this.props.onChange,
+        activeItems: this.props.activeItems,
+    });
 
     // state = {
     //     activeItems: this.preExpandedItems(),
@@ -125,18 +131,12 @@ class Accordion extends Component<AccordionProps, *> {
         const { className, accordion, children } = this.props;
         return (
             <div role={accordion ? 'tablist' : null} className={className}>
-                {children}
+                <Provider store={this.store}>
+                    {children}
+                </Provider>
             </div>
         );
     }
 }
 
-const AccordionContainer = connect('accordion', actions)(Accordion);
-
-const AccordionWrapper = (props: AccordionProps) => (
-    <Provider store={store}>
-        <AccordionContainer {...props} />
-    </Provider>
-);
-
-export default AccordionWrapper;
+export default Accordion;
