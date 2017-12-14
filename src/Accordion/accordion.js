@@ -2,10 +2,9 @@
 
 import React, { Component } from 'react';
 import type { Node } from 'react';
-import { Provider, connect } from 'unistore';
+import createStore from 'unistore';
+import { Provider } from 'unistore/react';
 // import { isArraysEqualShallow } from '../utils';
-import store from '../store';
-import actions from '../actions';
 
 type AccordionProps = {
     accordion: boolean,
@@ -131,9 +130,7 @@ class Accordion extends Component<AccordionProps, *> {
         const { className, accordion, children } = this.props;
         return (
             <div role={accordion ? 'tablist' : null} className={className}>
-                <Provider store={this.store}>
-                    {children}
-                </Provider>
+                <Provider store={this.store}>{children}</Provider>
             </div>
         );
     }
